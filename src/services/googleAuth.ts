@@ -18,12 +18,19 @@ interface User {
   updatedAt: Date;
 }
 
+const getCallbackURL = () => {
+  if (process.env.NODE_ENV === 'production') {
+    return 'https://note-taking-app-backend-83yx.onrender.com/auth/google/callback';
+  }
+  return 'http://localhost:5000/auth/google/callback';
+};
+
 passport.use(
   new GoogleStrategy(
     {
       clientID: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-      callbackURL: '/auth/google/callback',
+      callbackURL: getCallbackURL(),
     },
     async (
       accessToken: string,
