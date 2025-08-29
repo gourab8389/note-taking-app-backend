@@ -5,6 +5,12 @@ import morgan from 'morgan';
 import dotenv from 'dotenv';
 import { PrismaClient } from '@prisma/client';
 
+import authRoutes from './routes/authRoutes';
+import noteRoutes from './routes/noteRoutes';
+
+import { errorHandler } from './middleware/errorHandler';
+import passport from './services/googleAuth';
+
 dotenv.config();
 
 const app = express();
@@ -23,6 +29,7 @@ app.use(morgan('combined'));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+app.use(passport.initialize());
 
 app.get('/health', (req, res) => {
   res.status(200).json({
@@ -31,6 +38,12 @@ app.get('/health', (req, res) => {
     timestamp: new Date().toISOString(),
   });
 });
+
+app.use('/auth', authRoutes);
+app.use('/api/notes', noteRoutes);
+
+
+app.use(errorHandler);
 
 const startServer = async () => {
   try {
