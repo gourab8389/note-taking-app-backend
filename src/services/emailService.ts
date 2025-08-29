@@ -1,9 +1,9 @@
-import nodemailer from 'nodemailer';
-import { Resend } from 'resend';
+import nodemailer from "nodemailer";
+// import { Resend } from "resend";
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
-  port: parseInt(process.env.SMTP_PORT || '587'),
+  port: parseInt(process.env.SMTP_PORT || "587"),
   secure: false,
   auth: {
     user: process.env.SMTP_USER,
@@ -11,10 +11,16 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+// const resend = process.env.RESEND_API_KEY
+//   ? new Resend(process.env.RESEND_API_KEY)
+//   : null;
 
-export const sendOTPEmail = async (email: string, otp: string, name: string): Promise<void> => {
-  const subject = 'Your OTP for Note Taking App';
+export const sendOTPEmail = async (
+  email: string,
+  otp: string,
+  name: string
+): Promise<void> => {
+  const subject = "Your OTP for Note Taking App";
   const html = `
   <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff; border: 1px solid #eaeaea; border-radius: 10px;">
     <!-- Header -->
@@ -45,26 +51,31 @@ export const sendOTPEmail = async (email: string, otp: string, name: string): Pr
   </div>
 `;
 
-
   try {
-    if (resend) {
-      await resend.emails.send({
-        from: 'Note Taking App <noreply@yourdomain.com>',
-        to: [email],
-        subject,
-        html,
-      });
-    } else {
-      await transporter.sendMail({
-        from: process.env.SMTP_USER,
-        to: email,
-        subject,
-        html,
-      });
-    }
+    // if (resend) {
+    //   await resend.emails.send({
+    //     from: 'Note Taking App <noreply@yourdomain.com>',
+    //     to: [email],
+    //     subject,
+    //     html,
+    //   });
+    // } else {
+    //   await transporter.sendMail({
+    //     from: process.env.SMTP_USER,
+    //     to: email,
+    //     subject,
+    //     html,
+    //   });
+    // }
+    await transporter.sendMail({
+      from: process.env.SMTP_USER,
+      to: email,
+      subject,
+      html,
+    });
     console.log(`OTP email sent to ${email}`);
   } catch (error) {
-    console.error('Error sending OTP email:', error);
-    throw new Error('Failed to send OTP email');
+    console.error("Error sending OTP email:", error);
+    throw new Error("Failed to send OTP email");
   }
 };

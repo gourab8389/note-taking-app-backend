@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, RequestHandler } from 'express';
 import { AuthController } from '../controllers/authController';
 import { authenticate } from '../middleware/auth';
 import {
@@ -40,7 +40,6 @@ router.post('/resend-otp', otpRateLimit, authController.resendOTP);
 router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 router.get('/google/callback', passport.authenticate('google', { session: false }), authController.googleCallback);
 
-// Protected routes
-router.get('/profile', authenticate, authController.getProfile);
+router.get('/profile', authenticate, authController.getProfile as RequestHandler);
 
 export default router;
