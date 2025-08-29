@@ -1,5 +1,4 @@
 import { Router, RequestHandler } from 'express';
-import { AuthController } from '../controllers/authController';
 import { authenticate } from '../middleware/auth';
 import {
   validateSignup,
@@ -9,6 +8,7 @@ import {
 } from '../middleware/validation';
 import passport from '../services/googleAuth';
 import rateLimit from 'express-rate-limit';
+import { AuthController } from '../controllers/authController';
 
 const router = Router();
 const authController = new AuthController();
@@ -31,15 +31,53 @@ const otpRateLimit = rateLimit({
   },
 });
 
-router.post('/signup', authRateLimit, validateSignup, handleValidationErrors, authController.signup);
-router.post('/verify-otp', authRateLimit, validateOTP, handleValidationErrors, authController.verifyOTP);
-router.post('/login', authRateLimit, validateLogin, handleValidationErrors, authController.login);
-router.post('/resend-otp', otpRateLimit, authController.resendOTP);
+// Regular auth routes
+router.post('/signup', 
+  authRateLimit, 
+  validateSignup, 
+  handleValidationErrors, 
+  authController.signup.bind(authController)
+);
+
+router.post('/verify-otp', 
+  authRateLimit, 
+  validateOTP, 
+  handleValidationErrors, 
+  authController.verifyOTP.bind(authController)
+);
+
+router.post('/login', 
+  authRateLimit, 
+  validateLogin, 
+  handleValidationErrors, 
+  authController.login.bind(authController)
+);
+
+router.post('/resend-otp', 
+  otpRateLimit, 
+  authController.resendOTP.bind(authController)
+);
 
 // Google OAuth routes
-router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
-router.get('/google/callback', passport.authenticate('google', { session: false }), authController.googleCallback);
+router.get('/google', 
+  passport.authenticate('google', { 
+    scope: ['profile', 'email'],
+    session: false // Add this for consistency
+  })
+);
 
-router.get('/profile', authenticate, authController.getProfile as RequestHandler);
+router.get('/google/callback',
+  passport.authenticate('google', { 
+    session: false,
+    failureRedirect: `${process.env.CLIENT_URL}/auth/login?error=google_auth_failed`
+  }),
+  authController.googleCallback.bind(authController)
+);
+
+// Profile route
+router.get('/profile', 
+  authenticate, 
+  authController.getProfile.bind(authController) as RequestHandler
+);
 
 export default router;
